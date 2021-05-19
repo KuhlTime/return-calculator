@@ -1,0 +1,35 @@
+{
+  "title": "Rendite Rechner",
+  "version_label": "Letztes Update",
+  "tax_switch": "25% Steuernabgabe einberechnen",
+  "data_button": "Daten",
+  "calculation_button": "Berechnung",
+  "capital_input": "Startkapital",
+  "monthly_input": "Einzahlung / monatlich",
+  "earnings_input": "Rendite / jährlich",
+  "age_input": "Alter",
+  "future_age_input": "Zukunftsalter",
+  "capital": "Kapital",
+  "years": "Jahre",
+  "disclaimer": "Unter der Annahme, das für das monatliche Investieren keinerlei Transaktionskosten anfallen.",
+  "timespan": "Zeitraum",
+  "investment": "Investment",
+  "yield": "Rendite",
+  "earnings": "Gewinn",
+  "text_1": [
+    "In",
+    "Jahren",
+    "hätte man bei einer gesamt Investition von",
+    "einen Gewinn von",
+    "bzw.",
+    "mit Abzug von",
+    "Steuern wäre dies ein Gesamtkapital von"
+  ],
+  "text_2": [
+    "Die durchschnittliche Rendite beim",
+    "über die letzten",
+    "Jahre",
+    "hat",
+    "betragen"
+  ]
+}

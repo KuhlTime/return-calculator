@@ -1,24 +1,17 @@
-# return-calculator
+<p align="center">
+    <img src="./assets/banner.png" alt="Banner">
+</p>
 
-## Project setup
-```
-npm install
-```
+<p align="center">
+    <img src="./assets/screenshot.png" alt="Screenshot">
+</p>
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+<p align="center" style="font-size: 24px">
+    <b>
+        <a href="https://return-calculator.kuhlti.me">
+            return-calculator.kuhlti.me
+        </a>
+    </b>
+</p>
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+You want to know how a exponential increase can benefit you in the long term, I have made this small toll to calculate your investment return over a set time. 
