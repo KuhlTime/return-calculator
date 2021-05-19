@@ -115,7 +115,7 @@
           <tbody>
             <tr>
               <td>{{ $t('timespan') }}</td>
-              <td>{{ maxAge - age }} Jahre</td>
+              <td>{{ maxAge - age }} {{ $t('years') }}</td>
             </tr>
             <tr>
               <td>{{ $t('investment') }}</td>
