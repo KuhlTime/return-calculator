@@ -171,7 +171,7 @@ export default {
       version: '19.05.2021',
       showHint: false,
       removeTaxes: true,
-      langs: ['en', 'de'],
+      langs: ['🇬🇧 en', '🇩🇪 de'],
 
       capitalString: '1000',
       montlyDepositString: '20',
