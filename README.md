@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./assets/banner.png" alt="Banner">
+    <img src="./assets/banner.png" alt="Banner" max-height="240px">
 </p>
 
 <p align="center">
