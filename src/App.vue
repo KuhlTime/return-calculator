@@ -149,7 +149,7 @@
     <v-footer id="footer">
       <v-icon dense>update</v-icon>
       <div style="margin-left: 8px">{{ $t('version_label') }}: {{ version }}</div>
-      <a href="https://codesandbox.io/s/renditen-rechner-b0fxe" target="_blank" style="margin-left: 8px">Source Code</a>
+      <a href="https://github.com/KuhlTime/return-calculator" target="_blank" style="margin-left: 8px">Source Code</a>
       <v-spacer></v-spacer>
       <div>
         Made with ❤️ by
