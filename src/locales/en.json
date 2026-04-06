@@ -31,5 +31,9 @@
     "years",
     "was",
     ""
-  ]
+  ],
+  "chart_y_axis": "Capital",
+  "chart_x_axis": "Age",
+  "chart_age_label": "Age: ",
+  "chart_dataset": "Capital growth"
 }

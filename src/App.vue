@@ -1,9 +1,7 @@
 <!-- @KuhlTime -->
-<!-- This code is not ment to be very pretty. And should not be seen as any best practice. -->
-
 <template>
   <v-app id="app">
-    <v-content id="content">
+    <v-main id="content">
       <h1>{{ $t('title') }}</h1>
 
       <select v-model="$i18n.locale" class="lang-selection">
@@ -16,7 +14,7 @@
       <v-form>
         <v-container fluid>
           <v-row>
-            <v-col cols="14" sm="3">
+            <v-col cols="12" sm="3">
               <v-text-field
                 v-model="capitalString"
                 :label="$t('capital_input')"
@@ -27,18 +25,18 @@
                 :persistent-hint="showHint"
               ></v-text-field>
             </v-col>
-            <v-col cols="14" sm="3">
+            <v-col cols="12" sm="3">
               <v-text-field
-                v-model="montlyDepositString"
+                v-model="monthlyDepositString"
                 :label="$t('monthly_input')"
                 append-icon="toll"
                 outlined
                 :prefix="moneyUnit"
-                :hint="`${montlyDeposit} ${moneyUnit}`"
+                :hint="`${monthlyDeposit} ${moneyUnit}`"
                 :persistent-hint="showHint"
               ></v-text-field>
             </v-col>
-            <v-col cols="14" sm="2">
+            <v-col cols="12" sm="2">
               <v-text-field
                 v-model="avgYieldPercentString"
                 :label="$t('earnings_input')"
@@ -49,7 +47,7 @@
                 :persistent-hint="showHint"
               ></v-text-field>
             </v-col>
-            <v-col cols="14" sm="2">
+            <v-col cols="12" sm="2">
               <v-text-field
                 v-model="ageString"
                 :label="$t('age_input')"
@@ -59,7 +57,7 @@
                 outlined
               ></v-text-field>
             </v-col>
-            <v-col cols="14" sm="2">
+            <v-col cols="12" sm="2">
               <v-text-field
                 v-model="maxAgeString"
                 :label="$t('future_age_input')"
@@ -98,15 +96,15 @@
         {{ $t('text_1[0]') }}
         <span class="highlight">{{ maxAge - age }} {{ $t('text_1[1]') }}</span>
         {{ $t('text_1[2]') }}
-        <span class="highlight">{{ investmentByAge(maxAge) }} {{ moneyUnit }}</span>
+        <span class="highlight">{{ totalInvested }} {{ moneyUnit }}</span>
         {{ $t('text_1[3]') }}
-        <span class="highlight">{{ yieldRateByAge(maxAge) * 100 }}%</span>
+        <span class="highlight">{{ finalYieldPercent }}%</span>
         {{ $t('text_1[4]') }}
-        <span class="highlight">{{ totalEarningsByAge(maxAge) }} {{ moneyUnit }}</span>
+        <span class="highlight">{{ totalEarnings }} {{ moneyUnit }}</span>
         {{ $t('text_1[5]') }}
         <span class="highlight">{{ taxesString }}%</span>
         {{ $t('text_1[6]') }}
-        <span class="highlight">{{ capitalWithoutTaxesByAge(maxAge) }} {{ moneyUnit }}.</span>
+        <span class="highlight">{{ afterTaxCapital }} {{ moneyUnit }}.</span>
         <p style="font-size: 11px; margin-top:4px;">({{ $t('disclaimer') }})</p>
       </div>
 
@@ -119,32 +117,24 @@
             </tr>
             <tr>
               <td>{{ $t('investment') }}</td>
-              <td>{{ investmentByAge(maxAge) }} €</td>
+              <td>{{ totalInvested }} €</td>
             </tr>
             <tr>
               <td>{{ $t('yield') }}</td>
-              <td>{{ yieldRateByAge(maxAge) * 100 }} %</td>
+              <td>{{ finalYieldPercent }} %</td>
             </tr>
             <tr>
               <td>{{ $t('earnings') }}</td>
-              <td>
-                {{
-                  removeTaxes ? capitalWithoutTaxesByAge(maxAge) - investmentByAge(maxAge) : totalEarningsByAge(maxAge)
-                }}
-                €
-              </td>
+              <td>{{ displayedEarnings }} €</td>
             </tr>
             <tr>
               <td>{{ $t('capital') }}</td>
-              <td>
-                {{ removeTaxes ? capitalWithoutTaxesByAge(maxAge) : capitalByAge(maxAge) }}
-                €
-              </td>
+              <td>{{ displayedCapital }} €</td>
             </tr>
           </tbody>
         </template>
       </v-simple-table>
-    </v-content>
+    </v-main>
 
     <v-footer id="footer">
       <v-icon dense>update</v-icon>
@@ -174,68 +164,12 @@ export default {
       langs: ['en', 'de'],
 
       capitalString: '1000',
-      montlyDepositString: '20',
+      monthlyDepositString: '20',
       avgYieldPercentString: '8,1',
       ageString: '22',
       maxAgeString: '40',
       taxesString: '25',
-      moneyUnit: '€',
-
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        legend: {
-          display: false
-        },
-        tooltips: {
-          // https://www.chartjs.org/docs/latest/configuration/tooltip.html#tooltip-callbacks
-          callbacks: {
-            title: function(tooltipItem) {
-              let capital = tooltipItem[0].yLabel
-
-              return `${capital} €`
-            },
-            label: function(tooltipItem) {
-              let age = tooltipItem.xLabel
-              return `Alter: ${age}`
-            }
-            /*
-            afterLabel: function(tooltipItem, data) {
-              let age = tooltipItem.xLabel
-              let yield = this.$methods.yieldRateByAge(age)
-              return `Rendite: ${yield}`
-            }*/
-          },
-          backgroundColor: 'rgba(0,0,0, 0.6)',
-          titleFontSize: 14,
-          bodyFontColor: '#FFF',
-          bodyFontSize: 13,
-          displayColors: false
-        },
-        scales: {
-          yAxes: [
-            {
-              scaleLabel: {
-                display: true,
-                labelString: 'Kapital'
-              },
-              ticks: {
-                callback: function(value) {
-                  return value + ' €'
-                }
-              }
-            }
-          ],
-          xAxes: [
-            {
-              scaleLabel: {
-                display: true,
-                labelString: 'Jahre'
-              }
-            }
-          ]
-        }
-      }
+      moneyUnit: '€'
     }
   },
   computed: {
@@ -243,8 +177,8 @@ export default {
       return this.saveParseToFloat(this.capitalString)
     },
 
-    montlyDeposit: function() {
-      return this.saveParseToFloat(this.montlyDepositString)
+    monthlyDeposit: function() {
+      return this.saveParseToFloat(this.monthlyDepositString)
     },
 
     avgYieldPercent: function() {
@@ -263,9 +197,39 @@ export default {
       return this.saveParseToFloat(this.taxesString) * 0.01
     },
 
-    // The ahe range
+    totalAvgYield: function() {
+      return this.avgYieldPercent * 0.01 + 1
+    },
+
+    // The age range
     ageRange: function() {
       return this.range(this.age, this.maxAge + 1)
+    },
+
+    // Pre-computed final values to avoid repeated method calls in the template
+    totalInvested: function() {
+      return this.investmentByAge(this.maxAge)
+    },
+
+    totalEarnings: function() {
+      return this.totalEarningsByAge(this.maxAge)
+    },
+
+    afterTaxCapital: function() {
+      return this.capitalWithoutTaxesByAge(this.maxAge)
+    },
+
+    // Total yield as a rounded integer percentage (e.g. 308 for 308% growth)
+    finalYieldPercent: function() {
+      return this.yieldRateByAge(this.maxAge)
+    },
+
+    displayedCapital: function() {
+      return this.removeTaxes ? this.afterTaxCapital : this.capitalByAge(this.maxAge)
+    },
+
+    displayedEarnings: function() {
+      return this.removeTaxes ? this.afterTaxCapital - this.totalInvested : this.totalEarnings
     },
 
     // See: https://vue-chartjs.org/guide/#chart-with-props
@@ -275,7 +239,7 @@ export default {
         datasets: [
           {
             // Styling: https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
-            label: 'Kapitalentwicklung',
+            label: this.$t('chart_dataset'),
             data: this.values,
             backgroundColor: 'rgba(33, 150, 243, 0.4)',
             borderColor: 'rgba(33, 150, 243, 0.6)',
@@ -289,20 +253,63 @@ export default {
       }
     },
 
-    totalAvgYield: function() {
-      return this.avgYieldPercent * 0.01 + 1
+    chartOptions: function() {
+      const ageLabel = this.$t('chart_age_label')
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+          display: false
+        },
+        tooltips: {
+          // https://www.chartjs.org/docs/latest/configuration/tooltip.html#tooltip-callbacks
+          callbacks: {
+            title: function(tooltipItem) {
+              let capital = tooltipItem[0].yLabel
+              return `${capital} €`
+            },
+            label: function(tooltipItem) {
+              let age = tooltipItem.xLabel
+              return `${ageLabel}${age}`
+            }
+          },
+          backgroundColor: 'rgba(0,0,0, 0.6)',
+          titleFontSize: 14,
+          bodyFontColor: '#FFF',
+          bodyFontSize: 13,
+          displayColors: false
+        },
+        scales: {
+          yAxes: [
+            {
+              scaleLabel: {
+                display: true,
+                labelString: this.$t('chart_y_axis')
+              },
+              ticks: {
+                callback: function(value) {
+                  return value + ' €'
+                }
+              }
+            }
+          ],
+          xAxes: [
+            {
+              scaleLabel: {
+                display: true,
+                labelString: this.$t('chart_x_axis')
+              }
+            }
+          ]
+        }
+      }
     },
 
-    // Returns an array of capital each year
+    // Returns an array of capital values for each year in ageRange
     values: function() {
-      var array = []
-
-      this.ageRange.forEach(x => {
-        let value = this.removeTaxes ? this.capitalWithoutTaxesByAge(x) : this.capitalByAge(x)
-        array.push(value)
-      })
-
-      return array
+      return this.ageRange.map(x =>
+        this.removeTaxes ? this.capitalWithoutTaxesByAge(x) : this.capitalByAge(x)
+      )
     }
   },
   methods: {
@@ -313,55 +320,40 @@ export default {
         .map((x, y) => x + y * step)
     },
 
-    // Calculates the capital for the given age n
+    // Calculates the total capital for the given age n
     capitalByAge: function(n, round = true) {
-      // Calculate age offset
-      let x = n - this.age
-      let ceil = Math.pow(this.totalAvgYield, x)
-      let value = (this.capital + x * this.montlyDeposit * 12) * ceil
-
+      let years = n - this.age
+      let value = (this.capital + years * this.monthlyDeposit * 12) * Math.pow(this.totalAvgYield, years)
       return round ? Math.round(value) : value
     },
 
+    // Calculates the post-tax capital for the given age n
     capitalWithoutTaxesByAge: function(n, round = true) {
-      let value = this.investmentByAge(n) + this.totalEarningsByAge(n) * (1 - this.taxes)
-
+      let value = this.investmentByAge(n, false) + this.totalEarningsByAge(n, false) * (1 - this.taxes)
       return round ? Math.round(value) : value
     },
 
     // Calculates the total amount invested by the given age
     investmentByAge: function(n, round = true) {
-      // Calculate age offset
-      let x = n - this.age
-      let value = this.capital + x * this.montlyDeposit * 12
-
+      let years = n - this.age
+      let value = this.capital + years * this.monthlyDeposit * 12
       return round ? Math.round(value) : value
     },
 
-    yieldRateByAge: function(n, round = true) {
-      let x = n - this.age
-      let value = Math.pow(this.totalAvgYield, x) - 1
-
-      return round ? Math.round(value) : value
+    // Returns the total yield as a rounded integer percentage (e.g. 308 for 308% total growth)
+    yieldRateByAge: function(n) {
+      return Math.round((Math.pow(this.totalAvgYield, n - this.age) - 1) * 100)
     },
 
     totalEarningsByAge: function(n, round = true) {
-      let value = this.capitalByAge(n) - this.investmentByAge(n)
-
+      let value = this.capitalByAge(n, false) - this.investmentByAge(n, false)
       return round ? Math.round(value) : value
     },
 
-    // Savely parses an int
-    saveParseToInt: function(string, defaultValue = 0) {
-      let value = parseInt(string, 10)
-      return value ? value : defaultValue
-    },
-
-    // Savely parses a float
+    // Safely parses a float, treating comma as decimal separator
     saveParseToFloat: function(string, defaultValue = 0.0) {
-      string = string.replace(',', '.')
-      let value = parseFloat(string)
-      return value ? value : defaultValue
+      const value = parseFloat(string.replace(',', '.'))
+      return isNaN(value) ? defaultValue : value
     }
   }
 }

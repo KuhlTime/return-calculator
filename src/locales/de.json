@@ -31,5 +31,9 @@
     "Jahre",
     "hat",
     "betragen"
-  ]
+  ],
+  "chart_y_axis": "Kapital",
+  "chart_x_axis": "Jahre",
+  "chart_age_label": "Alter: ",
+  "chart_dataset": "Kapitalentwicklung"
 }
