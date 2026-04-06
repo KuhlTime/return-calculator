@@ -35,5 +35,13 @@
   "chart_y_axis": "Kapital",
   "chart_x_axis": "Jahre",
   "chart_age_label": "Alter: ",
-  "chart_dataset": "Kapitalentwicklung"
+  "chart_dataset": "Kapitalentwicklung",
+  "chart_real_dataset": "Real (inflationsbereinigt)",
+  "inflation_toggle": "Inflationsbereinigung",
+  "inflation_rate_input": "Inflationsrate",
+  "inflation_hint_loading": "Lade Euroraum-Daten…",
+  "inflation_hint_loaded": "Ø letzte {n} J. · Weltbank / Euroraum",
+  "inflation_hint_error": "Standard – Live-Daten nicht verfügbar",
+  "real_capital": "Realkapital",
+  "text_real": ["In heutigem Kaufkraftwert entspricht dies", "."]
 }

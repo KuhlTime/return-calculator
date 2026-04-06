@@ -8,9 +8,17 @@
         <option v-for="(lang, i) in langs" :key="`Lang${i}`" :value="lang">{{ lang }}</option>
       </select>
 
-      <input type="checkbox" class="switch" v-model="removeTaxes" />
-      <br />
-      {{ $t('tax_switch') }}
+      <div class="toggles">
+        <div class="toggle-row">
+          <input type="checkbox" class="switch" v-model="removeTaxes" />
+          <span>{{ $t('tax_switch') }}</span>
+        </div>
+        <div class="toggle-row">
+          <input type="checkbox" class="switch" v-model="inflationEnabled" />
+          <span>{{ $t('inflation_toggle') }}</span>
+        </div>
+      </div>
+
       <v-form>
         <v-container fluid>
           <v-row>
@@ -68,6 +76,19 @@
               ></v-text-field>
             </v-col>
           </v-row>
+          <v-row v-if="inflationEnabled">
+            <v-col cols="12" sm="3">
+              <v-text-field
+                v-model="inflationRateString"
+                :label="$t('inflation_rate_input')"
+                append-icon="trending_down"
+                outlined
+                prefix="%"
+                :hint="inflationHint"
+                persistent-hint
+              ></v-text-field>
+            </v-col>
+          </v-row>
         </v-container>
       </v-form>
 
@@ -105,6 +126,11 @@
         <span class="highlight">{{ taxesString }}%</span>
         {{ $t('text_1[6]') }}
         <span class="highlight">{{ afterTaxCapital }} {{ moneyUnit }}.</span>
+        <template v-if="inflationEnabled">
+          {{ $t('text_real[0]') }}
+          <span class="highlight-real">{{ displayedRealCapital }} {{ moneyUnit }}</span>
+          {{ $t('text_real[1]') }}
+        </template>
         <p style="font-size: 11px; margin-top:4px;">({{ $t('disclaimer') }})</p>
       </div>
 
@@ -130,6 +156,10 @@
             <tr>
               <td>{{ $t('capital') }}</td>
               <td>{{ displayedCapital }} €</td>
+            </tr>
+            <tr v-if="inflationEnabled">
+              <td>{{ $t('real_capital') }}</td>
+              <td class="real-value">{{ displayedRealCapital }} €</td>
             </tr>
           </tbody>
         </template>
@@ -169,8 +199,16 @@ export default {
       ageString: '22',
       maxAgeString: '40',
       taxesString: '25',
-      moneyUnit: '€'
+      moneyUnit: '€',
+
+      inflationEnabled: false,
+      inflationRateString: '2',
+      inflationFetchStatus: 'idle', // 'idle' | 'loading' | 'loaded' | 'error'
+      inflationDataYears: 0
     }
+  },
+  mounted() {
+    this.fetchInflationRate()
   },
   computed: {
     capital: function() {
@@ -195,6 +233,16 @@ export default {
 
     taxes: function() {
       return this.saveParseToFloat(this.taxesString) * 0.01
+    },
+
+    inflationRate: function() {
+      return this.saveParseToFloat(this.inflationRateString)
+    },
+
+    inflationHint: function() {
+      if (this.inflationFetchStatus === 'loading') return this.$t('inflation_hint_loading')
+      if (this.inflationFetchStatus === 'loaded') return this.$t('inflation_hint_loaded', { n: this.inflationDataYears })
+      return this.$t('inflation_hint_error')
     },
 
     totalAvgYield: function() {
@@ -232,25 +280,43 @@ export default {
       return this.removeTaxes ? this.afterTaxCapital - this.totalInvested : this.totalEarnings
     },
 
+    displayedRealCapital: function() {
+      return this.inflationAdjust(this.displayedCapital, this.maxAge)
+    },
+
     // See: https://vue-chartjs.org/guide/#chart-with-props
     chartdata: function() {
-      return {
-        labels: this.ageRange,
-        datasets: [
-          {
-            // Styling: https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
-            label: this.$t('chart_dataset'),
-            data: this.values,
-            backgroundColor: 'rgba(33, 150, 243, 0.4)',
-            borderColor: 'rgba(33, 150, 243, 0.6)',
-            borderWidth: 2,
-            pointBackgroundColor: 'rgba(33, 150, 243, 1)',
-            pointBorderWidth: 0,
-            pointRadius: 3.3,
-            pointHitRadius: 6
-          }
-        ]
+      const datasets = [
+        {
+          // Styling: https://www.chartjs.org/docs/latest/charts/line.html#dataset-properties
+          label: this.$t('chart_dataset'),
+          data: this.values,
+          backgroundColor: 'rgba(33, 150, 243, 0.4)',
+          borderColor: 'rgba(33, 150, 243, 0.6)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(33, 150, 243, 1)',
+          pointBorderWidth: 0,
+          pointRadius: 3.3,
+          pointHitRadius: 6
+        }
+      ]
+
+      if (this.inflationEnabled) {
+        datasets.push({
+          label: this.$t('chart_real_dataset'),
+          data: this.realValues,
+          backgroundColor: 'rgba(76, 175, 80, 0.2)',
+          borderColor: 'rgba(76, 175, 80, 0.7)',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointBackgroundColor: 'rgba(76, 175, 80, 1)',
+          pointBorderWidth: 0,
+          pointRadius: 3.3,
+          pointHitRadius: 6
+        })
       }
+
+      return { labels: this.ageRange, datasets }
     },
 
     chartOptions: function() {
@@ -259,7 +325,7 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         legend: {
-          display: false
+          display: this.inflationEnabled
         },
         tooltips: {
           // https://www.chartjs.org/docs/latest/configuration/tooltip.html#tooltip-callbacks
@@ -305,10 +371,20 @@ export default {
       }
     },
 
-    // Returns an array of capital values for each year in ageRange
+    // Returns an array of nominal capital values for each year in ageRange
     values: function() {
       return this.ageRange.map(x =>
         this.removeTaxes ? this.capitalWithoutTaxesByAge(x) : this.capitalByAge(x)
+      )
+    },
+
+    // Returns an array of inflation-adjusted capital values for each year in ageRange
+    realValues: function() {
+      return this.ageRange.map(x =>
+        this.inflationAdjust(
+          this.removeTaxes ? this.capitalWithoutTaxesByAge(x) : this.capitalByAge(x),
+          x
+        )
       )
     }
   },
@@ -348,6 +424,37 @@ export default {
     totalEarningsByAge: function(n, round = true) {
       let value = this.capitalByAge(n, false) - this.investmentByAge(n, false)
       return round ? Math.round(value) : value
+    },
+
+    // Returns the nominal value discounted by inflation back to today's purchasing power
+    inflationAdjust: function(nominalValue, age) {
+      const years = age - this.age
+      if (years <= 0) return nominalValue
+      return Math.round(nominalValue / Math.pow(1 + this.inflationRate / 100, years))
+    },
+
+    // Fetches historical Euro area CPI inflation from the World Bank API and
+    // pre-fills inflationRateString with the average of the last ~10 years.
+    // Falls back silently to the hardcoded default on any error.
+    fetchInflationRate: async function() {
+      this.inflationFetchStatus = 'loading'
+      try {
+        const res = await fetch(
+          'https://api.worldbank.org/v2/country/EMU/indicator/FP.CPI.TOTL.ZG?format=json&mrv=10&per_page=10'
+        )
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        const validValues = data[1]
+          .filter(d => d.value !== null)
+          .map(d => d.value)
+        if (validValues.length === 0) throw new Error('No data')
+        const avg = validValues.reduce((a, b) => a + b, 0) / validValues.length
+        this.inflationRateString = String(Math.round(avg * 10) / 10)
+        this.inflationDataYears = validValues.length
+        this.inflationFetchStatus = 'loaded'
+      } catch {
+        this.inflationFetchStatus = 'error'
+      }
     },
 
     // Safely parses a float, treating comma as decimal separator
@@ -399,8 +506,32 @@ body {
   font-size: 13px;
 }
 
+.toggles {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .highlight {
   color: #2196f3;
+  font-weight: 600;
+}
+
+.highlight-real {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.real-value {
+  color: #4caf50;
   font-weight: 600;
 }
 

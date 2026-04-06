@@ -35,5 +35,13 @@
   "chart_y_axis": "Capital",
   "chart_x_axis": "Age",
   "chart_age_label": "Age: ",
-  "chart_dataset": "Capital growth"
+  "chart_dataset": "Capital growth",
+  "chart_real_dataset": "Real (inflation-adjusted)",
+  "inflation_toggle": "Adjust for Inflation",
+  "inflation_rate_input": "Inflation Rate",
+  "inflation_hint_loading": "Fetching Euro area data…",
+  "inflation_hint_loaded": "Avg. last {n} yrs · World Bank / Euro area",
+  "inflation_hint_error": "Default — live data unavailable",
+  "real_capital": "Real Capital",
+  "text_real": ["In today's purchasing power that is", "."]
 }
